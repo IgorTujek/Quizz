@@ -1,2 +1,2 @@
 # Quizz
-Placeholder
+Placeholder (kiedyś coś tu będzie i swear)
