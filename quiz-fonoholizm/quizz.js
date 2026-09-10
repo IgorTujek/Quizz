@@ -61,61 +61,282 @@ const questions = [
     }
 ];
 
+
+// POZIOM EKSPERTA
+
+const expertQuestions = [
+    {
+        question: "Co może pomóc sprawdzić, ile czasu rzeczywiście spędzamy ze smartfonem?",
+        correct: "Skorzystanie ze statystyk czasu przed ekranem dostępnych w telefonie.",
+        wrong: "Zgadywanie na podstawie tego, jak często widzimy telefon."
+    },
+    {
+        question: "Które zachowanie najlepiej pokazuje świadome korzystanie ze smartfona?",
+        correct: "Odłożenie telefonu podczas rozmowy lub nauki, gdy nie jest potrzebny.",
+        wrong: "Sprawdzanie telefonu przy każdej chwili ciszy."
+    }
+];
+
+
+// ZMIENNE
+
 let currentQuestion = 0;
 let score = 0;
 
+
+// ELEMENTY HTML
+
 const startScreen = document.getElementById("start-screen");
 const quizScreen = document.getElementById("quiz-screen");
+const resultScreen = document.getElementById("result-screen");
+
 const startBtn = document.getElementById("start-btn");
 const nextBtn = document.getElementById("next-btn");
+const restartBtn = document.getElementById("restart-btn");
+
 const questionElement = document.getElementById("question");
 const answersElement = document.getElementById("answers");
 const scoreElement = document.getElementById("score");
 
+const finalScoreElement = document.getElementById("final-score");
+const resultMessageElement = document.getElementById("result-message");
+
+
+// ROZPOCZĘCIE QUIZU
+
 startBtn.onclick = function () {
+
+    currentQuestion = 0;
+    score = 0;
+
     startScreen.style.display = "none";
     quizScreen.style.display = "block";
+    resultScreen.style.display = "none";
+
+    scoreElement.textContent = "Punkty: 0";
+
     showQuestion();
 };
 
 
-
-
+// POKAZANIE PYTANIA
 
 function showQuestion() {
-    const question = questions[currentQuestion];
+
+    let question;
+
+    if (currentQuestion < questions.length) {
+
+        question = questions[currentQuestion];
+
+    } else {
+
+        question = expertQuestions[currentQuestion - questions.length];
+
+    }
+
+
     questionElement.textContent = question.question;
+
     answersElement.innerHTML = "";
+
+
+    // POPRAWNA ODPOWIEDŹ
+
     const correctBtn = document.createElement("button");
+
     correctBtn.textContent = question.correct;
+
+
     correctBtn.onclick = function () {
-        score++;
-        scoreElement.textContent = "Punkty: " + score;
-        nextBtn.style.display = "block";
+
+        answerQuestion(correctBtn, wrongBtn, true);
+
     };
 
+
+    // BŁĘDNA ODPOWIEDŹ
+
     const wrongBtn = document.createElement("button");
+
     wrongBtn.textContent = question.wrong;
+
+
     wrongBtn.onclick = function () {
-        nextBtn.style.display = "block";
+
+        answerQuestion(wrongBtn, correctBtn, false);
+
     };
+
+
     answersElement.appendChild(correctBtn);
     answersElement.appendChild(wrongBtn);
 }
-nextBtn.onclick = function () {
-    currentQuestion++;
-    nextBtn.style.display = "none";
-    if (currentQuestion < questions.length) {
-        showQuestion();
+
+
+// WYBÓR ODPOWIEDZI
+
+function answerQuestion(selectedButton, otherButton, correct) {
+
+    // BLOKADA OBU ODPOWIEDZI
+
+    selectedButton.disabled = true;
+    otherButton.disabled = true;
+
+
+    // JEŚLI DOBRA ODPOWIEDŹ
+
+    if (correct) {
+
+        score++;
+
+        selectedButton.classList.add("correct");
+
+        scoreElement.textContent = "Punkty: " + score;
+
     }
+
+    // JEŚLI ZŁA ODPOWIEDŹ
+
     else {
-        showResult();
+
+        selectedButton.classList.add("wrong");
+
+        // Pokazujemy użytkownikowi poprawną odpowiedź
+
+        otherButton.classList.add("correct");
+
     }
+
+
+    // POKAZUJEMY PRZYCISK DALEJ
+
+    nextBtn.style.display = "block";
+}
+
+
+// NASTĘPNE PYTANIE
+
+nextBtn.onclick = function () {
+
+    currentQuestion++;
+
+    nextBtn.style.display = "none";
+
+
+    // KONIEC PODSTAWOWEGO QUIZU
+
+    if (currentQuestion === questions.length) {
+
+        showExpertLevel();
+
+        return;
+    }
+
+
+    // KONIEC CAŁEGO QUIZU
+
+    if (currentQuestion >= questions.length + expertQuestions.length) {
+
+        showResult();
+
+        return;
+    }
+
+
+    showQuestion();
+};
+
+
+// ODBLOKOWANIE POZIOMU EKSPERTA
+
+function showExpertLevel() {
+
+    questionElement.textContent = "🔓 Poziom Eksperta odblokowany!";
+
+    answersElement.innerHTML = `
+        <p>
+            Udało Ci się ukończyć podstawową część quizu.
+        </p>
+
+        <p>
+            Teraz możesz sprawdzić swoją wiedzę w 2 dodatkowych pytaniach.
+        </p>
+
+        <button id="expert-btn">
+            Rozpocznij poziom eksperta
+        </button>
+    `;
+
+
+    const expertBtn = document.getElementById("expert-btn");
+
+
+    expertBtn.onclick = function () {
+
+        currentQuestion++;
+
+        showQuestion();
+
+    };
+}
+
+
+// WYNIK KOŃCOWY
+
+function showResult() {
+
+    quizScreen.style.display = "none";
+
+    resultScreen.style.display = "block";
+
+
+    finalScoreElement.textContent =
+        "Twój wynik: " + score + " / 14";
+
+
+    // 3 WIADOMOŚCI ZWROTNE
+
+    if (score <= 5) {
+
+        resultMessageElement.textContent =
+            "🌱 Początkujący — quiz pokazał Ci kilka ważnych informacji o świadomym korzystaniu ze smartfona. Warto potraktować je jako inspirację do małych zmian.";
+
+    } else if (score <= 9) {
+
+        resultMessageElement.textContent =
+            "📱 Świadomy użytkownik — dobrze znasz wiele zasad zdrowego korzystania z technologii. Warto dalej rozwijać swoje dobre nawyki.";
+
+    } else {
+
+        resultMessageElement.textContent =
+            "🏆 Mistrz równowagi — świetny wynik! Pokazałeś bardzo dobrą znajomość zasad świadomego korzystania ze smartfona.";
+
+    }
+
+
+    // DODATKOWA ODZNAKA ZA UKOŃCZENIE EKSPERTA
+
+    const badge = document.createElement("p");
+
+    badge.textContent =
+        "🏅 Odznaka zdobyta: EKSPERT ŚWIADOMEGO KORZYSTANIA";
+
+
+    resultScreen.appendChild(badge);
+}
+
+
+// RESTART
+
+restartBtn.onclick = function () {
+
+    currentQuestion = 0;
+    score = 0;
+
+    resultScreen.style.display = "none";
+    startScreen.style.display = "block";
+
+    scoreElement.textContent = "Punkty: 0";
 
 };
-function showResult() {
-    questionElement.textContent = "Koniec quizu!";
-    answersElement.innerHTML =
-        "<h2>Twój wynik: " + score + " / " + questions.length + "</h2>";
-
-}
